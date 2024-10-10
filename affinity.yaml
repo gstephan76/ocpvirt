@@ -1,0 +1,17 @@
+metadata:
+  name: example-vm-pod-affinity
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+spec:
+  template:
+    spec:
+      affinity:
+        podAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution: 
+          - labelSelector:
+              matchExpressions:
+              - key: example-key-1
+                operator: In
+                values:
+                - example-value-1
+            topologyKey: kubernetes.io/hostname

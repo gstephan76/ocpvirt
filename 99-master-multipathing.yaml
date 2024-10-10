@@ -1,0 +1,21 @@
+apiVersion: machineconfiguration.openshift.io/v1
+kind: MachineConfig
+metadata:
+  labels:
+    machineconfiguration.openshift.io/role: master
+  name: 99-master-multipathing
+spec:
+  config:
+    ignition:
+      version: 3.2.0
+    storage:
+      files:
+      - contents:
+          source: data:text/plain;charset=utf-8;base64,ZGVmYXVsdHMgewogICAgICAgIHVzZXJfZnJpZW5kbHlfbmFtZXMgeWVzCiAgICAgICAgZmluZF9tdWx0aXBhdGhzIHllcwogICAgICAgIGVuYWJsZV9mb3JlaWduICJeJCIKfQoKICBibGFja2xpc3RfZXhjZXB0aW9ucyB7CiAgICAgICAgICBwcm9wZXJ0eSAiKFNDU0lfSURFTlRffElEX1dXTikiCn0KCgogIGJsYWNrbGlzdCB7Cn0K
+        filesystem: root
+        mode: 420
+        path: /etc/multipath.conf
+    systemd:
+      units:
+      - enabled: true
+        name: multipathd.service

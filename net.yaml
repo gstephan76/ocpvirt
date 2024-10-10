@@ -1,0 +1,45 @@
+dns-resolver:
+  config:
+    server:
+      - 192.168.100.1
+
+interfaces:
+  - ipv4:
+      address:
+        - ip: 192.168.100.12
+          prefix-length: 24
+      dhcp: false
+      enabled: true
+    ipv6:
+      enabled: false
+    #    link-aggregation:
+      mode: active-backup
+      options:
+        miimon: "140"
+      port:
+        - eth0
+        - eth1
+    name: bond0
+    state: up
+    type: bond
+
+  - ipv4:
+      enabled: false
+    ipv6:
+      enabled: false
+    name: eth2
+    state: down
+    type: ethernet
+  - ipv4:
+      enabled: false
+    ipv6:
+      enabled: false
+    name: eth3
+    state: down
+    type: ethernet
+
+routes:
+  config:
+    - destination: 0.0.0.0/0
+      next-hop-address: 192.168.100.1
+      next-hop-interface: bond0

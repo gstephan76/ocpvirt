@@ -1,0 +1,17 @@
+metadata:
+  name: example-vm-node-affinity
+apiVersion: kubevirt.io/v1
+kind: VirtualMachine
+spec:
+  template:
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution: 
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: example.io/example-key
+                operator: In
+                values:
+                - example-value-1
+                - example-value-2

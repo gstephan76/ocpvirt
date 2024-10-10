@@ -1,0 +1,75 @@
+---
+
+dns-resolver:
+  config:
+    server:
+    - 10.38.8.6
+    - 10.38.8.7
+
+routes:
+  config:
+    - destination: 0.0.0.0/0
+      next-hop-address: 10.30.182.1
+      next-hop-interface: bond0.940
+
+interfaces:
+- name: bond0.940
+  type: vlan
+  state: up
+  vlan:
+    base-iface: bond0
+    id: 940
+  ipv4:
+    enabled: true
+    address:
+      - ip: 10.30.182.135
+        prefix-length: 24
+    dhcp: false
+- name: bond0 
+  type: bond 
+  state: up
+  ipv4:
+    enabled: false
+  ipv6:
+    enabled: false
+  link-aggregation:
+    mode: 802.3ad
+    options:
+      miimon: "150" 
+    port:
+     - eth0
+     - eth1
+
+- ipv4:
+    enabled: false
+  ipv6:
+    enabled: false
+  name: eth0
+  state: down
+  type: ethernet
+
+- ipv4:
+    enabled: false
+  ipv6:
+    enabled: false
+  name: eth1
+  state: down
+  type: ethernet
+
+- ipv4:
+    enabled: false
+  ipv6:
+    enabled: false
+  name: eth2
+  state: down
+  type: ethernet
+
+- ipv4:
+    enabled: false
+  ipv6:
+    enabled: false
+  name: eth3
+  state: down
+  type: ethernet
+
+

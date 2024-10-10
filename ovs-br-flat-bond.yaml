@@ -1,0 +1,51 @@
+apiVersion: nmstate.io/v1
+kind: NodeNetworkConfigurationPolicy
+metadata:
+  annotations:
+  name: bond1-eth3-eth4-policy
+spec:
+  desiredState:
+    interfaces:
+      - ipv4:
+          enabled: false
+        ipv6:
+          enabled: false
+        name: eth3
+        state: down
+        type: ethernet
+      - ipv4:
+          enabled: false
+        ipv6:
+          enabled: false
+        name: eth4
+        state: down
+      - name: bond1
+        description: Bond with ports eth1 and eth2
+        type: bond
+        state: up
+        ipv4:
+          dhcp: true
+          enabled: true
+        link-aggregation:
+          mode: 802.3ad
+          options:
+            miimon: "140"
+          port:
+            - eth3
+            - eth4
+      - bridge:
+          options:
+            stp: false
+          port:
+            - name: bond1
+        description: An OVS with enp3s0 uplink
+        name: ovs-br
+        state: up
+        type: ovs-bridge
+    ovn:
+      bridge-mappings:
+        - bridge: ovs-br
+          localnet: vm-network
+          state: present
+  nodeSelector:
+    node-role.kubernetes.io/worker: ""
