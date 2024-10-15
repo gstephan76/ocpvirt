@@ -1,0 +1,141 @@
+journalctl -b -f -u bootkube.service
+for pod in $(sudo podman ps -a -q); do sudo podman logs $pod; done
+tail -f
+/var/lib/containers/storage/overlay-containers/*/userdata/ctr.log
+tail -f
+/var/lib/containers/storage/overlay-containers/*/userdata/ctr.log
+journalctl -b -f -u kubelet.service -u crio.service
+sudo tail -f /var/log/containers/*
+
+
+oc adm node-logs --role=master -u kubelet
+oc adm node-logs --role=master --path=openshift-apiserver
+
+cat ~/<installation_directory>/.openshift_install.log
+
+./openshift-install create cluster --dir <installation_directory>
+--log-level debug
+
+
+Hi everyone,
+I'm in a OCP Virt PoC, with the following network topology:
+
+For each Bare Metal host, one has two NICs 25Gbps in trunk mode - each
+NIC with the VLANs 940
+(OCP subnets), 1001, 1002, ... (VMs subnets)
+
+ *--- bond0 (802.3ad) ----*
+ |                        |
+eth0                     eth1
+
+So, the cluster installation has done on bond0.940.
+
+I was considering creating "localnets" by adding just the
+bridge-mappings to br-ex, which is created by the installer:
+
+apiVersion: nmstate.io/v1
+kind: NodeNetworkConfigurationPolicy
+metadata:
+  name: br-ex-network
+spec:
+  nodeSelector:
+    node-role.kubernetes.io/worker: '' 
+  desiredState:
+    ovn:
+      bridge-mappings:
+      - localnet: vlan-1001
+        bridge: br-ex 
+        state: present
+      - localnet: vlan-1002
+        bridge: br-ex 
+        state: present
+
+And the NADs like this (VLAN 1001):
+
+apiVersion: k8s.cni.cncf.io/v1
+kind: NetworkAttachmentDefinition
+metadata:
+  name: br-ex-network
+  namespace: vmtest
+spec:
+  config: '{
+            "name":"vlan-1001",
+            "type":"ovn-k8s-cni-overlay",
+            "cniVersion":"0.4.0",
+            "topology":"localnet",
+            "netAttachDefName":"vmtest/br-ex-network"
+          }'
+
+However, the Reference implementation guide, page 20, which is
+different compared to our topology, since it has two bonds (4 NICs),
+creates a second ovs bridge (ovs-br1), with the parameter:
+allow-extra-patch-ports: true , which is not present in the br-ex bridge:
+
+kind: NodeNetworkConfigurationPolicy
+metadata:
+  name: ovs-br1-vlan-trunk
+spec:
+  nodeSelector:
+    node-role.kubernetes.io/worker: ''
+  desiredState:
+    interfaces:
+    - name: ovs-br1
+      description: |-
+        A dedicated OVS bridge with bond2 as a port
+        allowing all VLANs and untagged traffic
+      type: ovs-bridge
+      state: up
+      bridge:
+        allow-extra-patch-ports: true
+        options:
+          stp: false
+        port:
+        - name: bond2
+    ovn:
+      bridge-mappings:
+      - localnet: vlan-2024
+        bridge: ovs-br1
+        state: present
+      - localnet: vlan-1993
+        bridge: ovs-br1
+        state: present
+
+So, my question is: is it recommended to just apply the bridge-mappings to
+br-ex, in order to create the "localnets"? If it is not recommended,
+which is the preferred olution?
+
+Any feedback is highly appreciated.
+
+Thanks in advance,
+
+OCP release 4.15.33.
+
+The worker nodes have been set up with a ovs bridge on top of bond0,
+as per the attached file nncp-bridge-workes.yaml, a
+NetworkAttachmentDefinition (NAD)  has been
+created as per the attached file: nad.yaml.
+
+The VMs could use the NAD defined above.
+
+After the NAD has been deleted and recreated with a different name,
+any VM that attached to this NAD will fail to start.
+
+The install network definition is also included for clarification in
+the file dfcdsrv1428.yaml.
+
+
+---
+The NAD issue has been corrected, however one still does not have
+connectivity to the external VLAN.
+
+The NNCP bridge applied is in the annexed file
+nnpc-bridge-workers.yaml. Note that the ovs-bridge is defined on
+bond0. One odd thing observed is that the ovn: bridde-mapping session
+is missing. Even though is in the contents of the applied NNCP.
+
+
+----
+
+After updating the NNCP and NAD, we still have no connectivity to the
+VLAN 183. However, this time the ovn bride mappings are present in the
+NNCP description, as you can see in the annexed file:  
