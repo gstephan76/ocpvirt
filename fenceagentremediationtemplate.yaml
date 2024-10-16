@@ -1,0 +1,33 @@
+apiVersion: fence-agents-remediation.medik8s.io/v1alpha1
+kind: FenceAgentsRemediationTemplate
+metadata:
+  name: fenceagentsremediationtemplate-default
+  namespace: openshift-workload-availability
+spec:
+  template:
+    spec:
+      nodeparameters:
+        '--ip':
+          master1: '10.183.185.22'
+          master2: '10.183.185.55'
+          master3: '10.183.185.48'
+          worker1: '10.183.185.58'
+          worker2: '10.183.185.28'
+        '--username':
+          master1: 'root'
+          master2: 'root'
+          master3: 'root'
+          worker1: 'root'
+          worker2: 'root'
+        '--password':
+          master1: 'e87pWyL2MC'
+          master2: 'ydD4uwAE9K'
+          master3: 'hZZpeT2KBZ'
+          worker1: 'kApH6FkZ9W'
+          worker2: 'lQzdzg5nl3'
+      sharedparameters:
+        '--lanplus': ''
+      agent: fence_ipmilan
+      retryCount: '5'
+      retryInterval: '5s'
+      timeout: '60s'

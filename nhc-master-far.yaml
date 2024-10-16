@@ -1,0 +1,39 @@
+apiVersion: remediation.medik8s.io/v1alpha1
+kind: NodeHealthCheck
+metadata:
+  creationTimestamp: "2024-10-16T14:34:10Z"
+  generation: 2
+  name: nhc-master-far
+  resourceVersion: "412725"
+  uid: 4cf73e4e-70e5-44a2-bad7-dc2d502e6f67
+spec:
+  minHealthy: 30%
+  remediationTemplate:
+    apiVersion: fence-agents-remediation.medik8s.io/v1alpha1
+    kind: FenceAgentsRemediationTemplate
+    name: fenceagentsremediationtemplate-default
+    namespace: openshift-workload-availability
+  selector:
+    matchExpressions:
+    - key: node-role.kubernetes.io/control-plane
+      operator: Exists
+      values: []
+  unhealthyConditions:
+  - duration: 300s
+    status: "False"
+    type: Ready
+  - duration: 300s
+    status: Unknown
+    type: Ready
+status:
+  conditions:
+  - lastTransitionTime: "2024-10-16T14:40:42Z"
+    message: No issues found, NodeHealthCheck is enabled.
+    reason: NodeHealthCheckEnabled
+    status: "False"
+    type: Disabled
+  healthyNodes: 3
+  lastUpdateTime: "2024-10-16T14:40:42Z"
+  observedNodes: 3
+  phase: Enabled
+  reason: NHC is enabled, no ongoing remediation
